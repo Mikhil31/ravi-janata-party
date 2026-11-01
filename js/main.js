@@ -94,20 +94,43 @@
     document.head.appendChild(gs);
   }
 
-  // Ashoka-chakra spokes
-  function spokes(id, r1, r2) {
-    var g = document.getElementById(id);
-    if (!g) return;
-    var s = "";
-    for (var i = 0; i < 24; i++) {
-      var a = (i * 15) * Math.PI / 180;
-      s += '<line x1="' + (r1 * Math.cos(a)).toFixed(2) + '" y1="' + (r1 * Math.sin(a)).toFixed(2) +
-           '" x2="' + (r2 * Math.cos(a)).toFixed(2) + '" y2="' + (r2 * Math.sin(a)).toFixed(2) + '"/>';
+  // Google-translated pages: load a Noto font that has the chosen script's letters
+  // (Anton, Inter and DM Mono only cover Latin, so the browser was falling back to whatever it had)
+  if (gt) {
+    var NOTO = { hi: "Devanagari", mr: "Devanagari", ne: "Devanagari", sa: "Devanagari", gom: "Devanagari", mai: "Devanagari", doi: "Devanagari", brx: "Devanagari",
+      ta: "Tamil", te: "Telugu", ml: "Malayalam", bn: "Bengali", as: "Bengali", gu: "Gujarati", pa: "Gurmukhi", or: "Oriya",
+      sat: "Ol Chiki", "mni-Mtei": "Meetei Mayek" };
+    var fam = NOTO[gt] ? "Noto Sans " + NOTO[gt] : (/^(ur|ks|sd)$/.test(gt) ? "Noto Naskh Arabic" : "");
+    if (fam) {
+      var fl = document.createElement("link");
+      fl.rel = "stylesheet";
+      fl.href = "https://fonts.googleapis.com/css2?family=" + fam.replace(/ /g, "+") + ":wght@400;600;800&display=swap";
+      document.head.appendChild(fl);
+      var rs = document.documentElement.style;
+      rs.setProperty("--display", '"' + fam + '", "Anton", sans-serif');
+      rs.setProperty("--sans", '"Inter", "' + fam + '", system-ui, sans-serif');
+      rs.setProperty("--mono", '"DM Mono", "' + fam + '", ui-monospace, monospace');
     }
-    g.innerHTML = s;
   }
-  spokes("spokes", 14, 92);
-  spokes("spokes2", 12, 92);
+
+  // If the nav labels don't fit (long translations), collapse the header to the menu button
+  (function fitNav() {
+    var nav = document.querySelector("#hdr .nav"), root = document.documentElement;
+    if (!nav) return;
+    var queued = false;
+    function check() {
+      queued = false;
+      root.classList.remove("nav-tight");
+      if (nav.scrollWidth > nav.clientWidth + 1) root.classList.add("nav-tight");
+    }
+    function later() { if (!queued) { queued = true; requestAnimationFrame(check); } }
+    window.addEventListener("resize", later);
+    if (window.MutationObserver) new MutationObserver(later).observe(document.getElementById("links") || nav, { childList: true, characterData: true, subtree: true });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(later);
+    if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", later);
+    check();
+  })();
+
 
   // smooth scrolling (Lenis) with graceful fallback
   var lenis = null;

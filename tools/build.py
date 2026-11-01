@@ -12,6 +12,7 @@ read = lambda p: open(os.path.join(ROOT, p), encoding="utf-8").read()
 layout = read("src/layout.html")
 header = read("src/partials/header.html")
 footer = read("src/partials/footer.html")
+chakra = read("src/partials/chakra.html").strip()
 
 for path in sorted(glob.glob(os.path.join(ROOT, "src/pages/*.html"))):
     key = os.path.splitext(os.path.basename(path))[0]
@@ -20,7 +21,7 @@ for path in sorted(glob.glob(os.path.join(ROOT, "src/pages/*.html"))):
     meta = dict(line.split(": ", 1) for line in meta_text.strip().splitlines())
     # mark the current page in the header nav
     hdr = header.replace(f'data-nav="{key}"', f'data-nav="{key}" aria-current="page"')
-    out = (layout.replace("{{header}}", hdr).replace("{{footer}}", footer).replace("{{main}}", main.strip("\n"))
+    out = (layout.replace("{{header}}", hdr).replace("{{footer}}", footer).replace("{{main}}", main.strip("\n")).replace("{{chakra}}", chakra)
            .replace("{{title}}", html.escape(meta["title"], quote=False))
            .replace("{{desc}}", html.escape(meta["desc"], quote=True))
            .replace("{{titlekey}}", meta["titlekey"]).replace("{{key}}", key))
